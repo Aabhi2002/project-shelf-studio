@@ -21,7 +21,7 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentTheme, setCurrentTheme] = useState<ThemeName>('minimalist');
+  const [currentTheme, setCurrentTheme] = useState<ThemeName>('bold');
   const [isPreviewMode, setPreviewMode] = useState(false);
 
   return (
