@@ -1,185 +1,118 @@
 
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/hooks/useAuth';
 
 const Signup = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    username: '',
-    email: '',
-    password: '',
-  });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const { signUp, user, isLoading } = useAuth();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+  const validatePassword = () => {
+    if (password !== confirmPassword) {
+      setPasswordError("Passwords don't match");
+      return false;
+    }
+    
+    if (password.length < 6) {
+      setPasswordError("Password must be at least 6 characters");
+      return false;
+    }
+    
+    setPasswordError('');
+    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      // In a real app, we'd integrate with a backend auth system here
-      console.log('Signing up with:', formData);
-      
-      // Mock signup success
-      setTimeout(() => {
-        setIsLoading(false);
-        toast({
-          title: 'Account created!',
-          description: 'Welcome to ProjectShelf.',
-        });
-        navigate('/dashboard');
-      }, 1000);
-    } catch (error) {
-      setIsLoading(false);
-      toast({
-        variant: 'destructive',
-        title: 'Signup failed',
-        description: 'An error occurred while creating your account.',
-      });
+    
+    if (!validatePassword()) {
+      return;
     }
+    
+    await signUp(email, password);
   };
 
+  // Redirect if already logged in
+  if (user) {
+    return <Navigate to="/dashboard" />;
+  }
+
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-projectshelf-secondary">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <Link to="/" className="flex justify-center mb-5">
-          <div className="h-10 w-10 rounded-md bg-projectshelf-accent flex items-center justify-center">
-            <span className="text-white font-bold">PS</span>
-          </div>
-        </Link>
-        <h2 className="text-center text-3xl font-bold tracking-tight text-projectshelf-primary">
-          Create your account
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Already have an account?{" "}
-          <Link to="/login" className="font-medium text-projectshelf-accent hover:text-projectshelf-accent/90">
-            Sign in
-          </Link>
-        </p>
-      </div>
-
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium leading-6 text-gray-900">
-                Full name
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">Create an Account</CardTitle>
+          <CardDescription>Sign up to start creating your portfolio</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium" htmlFor="email">
+                Email
               </label>
-              <div className="mt-2">
-                <Input
-                  id="name"
-                  name="name"
-                  type="text"
-                  autoComplete="name"
-                  required
-                  value={formData.name}
-                  onChange={handleChange}
-                />
-              </div>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                required
+              />
             </div>
-
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium leading-6 text-gray-900">
-                Username
-              </label>
-              <div className="mt-2">
-                <Input
-                  id="username"
-                  name="username"
-                  type="text"
-                  autoComplete="username"
-                  required
-                  value={formData.username}
-                  onChange={handleChange}
-                />
-                <p className="mt-1 text-xs text-gray-500">
-                  This will be your portfolio URL: projectshelf.com/{formData.username || 'username'}
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
-                Email address
-              </label>
-              <div className="mt-2">
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
+            <div className="space-y-2">
+              <label className="text-sm font-medium" htmlFor="password">
                 Password
               </label>
-              <div className="mt-2">
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-              </div>
-              <p className="mt-1 text-xs text-gray-500">
-                Must be at least 8 characters long
-              </p>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                minLength={6}
+              />
             </div>
-
-            <div>
-              <Button 
-                type="submit" 
-                className="w-full bg-projectshelf-accent hover:bg-projectshelf-accent/90" 
-                disabled={isLoading}
-              >
-                {isLoading ? 'Creating account...' : 'Create account'}
-              </Button>
+            <div className="space-y-2">
+              <label className="text-sm font-medium" htmlFor="confirmPassword">
+                Confirm Password
+              </label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                minLength={6}
+              />
+              {passwordError && (
+                <p className="text-red-500 text-xs">{passwordError}</p>
+              )}
             </div>
+            <Button
+              type="submit"
+              className="w-full bg-projectshelf-accent hover:bg-projectshelf-accent/90"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Creating account...' : 'Create account'}
+            </Button>
           </form>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-white px-2 text-gray-500">Or continue with</span>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <Button variant="outline" type="button" className="w-full">
-                Google
-              </Button>
-              <Button variant="outline" type="button" className="w-full">
-                GitHub
-              </Button>
-            </div>
+        </CardContent>
+        <CardFooter className="flex flex-col space-y-4">
+          <div className="text-center text-sm">
+            Already have an account?{' '}
+            <Link to="/auth/login" className="text-projectshelf-accent hover:underline">
+              Sign in
+            </Link>
           </div>
-        </div>
-      </div>
+        </CardFooter>
+      </Card>
     </div>
   );
-};
-
-export default Signup;

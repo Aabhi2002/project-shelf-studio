@@ -1,37 +1,85 @@
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar, Image, Upload, X, Plus, LayoutGrid, Edit } from 'lucide-react';
+import { Project } from '@/types/project';
+import { ThemeProvider, useTheme, ThemeName } from '@/components/themes/ThemeProvider';
+import ThemeSelector from '@/components/themes/ThemeSelector';
+import ThemePreview from '@/components/themes/ThemePreview';
+import { createProject, updateProject, getProjectById, uploadFile } from '@/services/projectService';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useQueryClient } from '@tanstack/react-query';
 
-const ProjectEditor = ({ project = null }) => {
+// Wrapper component to provide theme context
+export const ProjectEditorWithTheme = () => {
+  return (
+    <ThemeProvider>
+      <ProjectEditorInner />
+    </ThemeProvider>
+  );
+};
+
+const ProjectEditorInner = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const isEditing = !!project;
+  const { id } = useParams();
+  const isEditing = !!id;
+  const { user } = useRequireAuth();
+  const { setPreviewMode, isPreviewMode } = useTheme();
+  const queryClient = useQueryClient();
 
-  const [formData, setFormData] = useState({
-    title: project?.title || '',
-    description: project?.description || '',
-    coverImage: project?.coverImage || '',
-    category: project?.category || 'web-design',
-    overview: project?.overview || '',
-    challenge: project?.challenge || '',
-    process: project?.process || '',
-    outcome: project?.outcome || '',
-    timeline: project?.timeline || [],
-    tools: project?.tools || [],
-    media: project?.media || [],
+  const [formData, setFormData] = useState<Project>({
+    title: '',
+    description: '',
+    coverImage: '',
+    category: 'web-design',
+    overview: '',
+    challenge: '',
+    process: '',
+    outcome: '',
+    timeline: [],
+    tools: [],
+    media: [],
+    status: 'draft',
+    theme: 'minimalist',
+    isPublic: false
   });
 
   const [selectedTab, setSelectedTab] = useState('details');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [previewMode, setPreviewMode] = useState(false);
+  const [fileUploading, setFileUploading] = useState(false);
+
+  // Fetch project data when editing
+  useEffect(() => {
+    if (isEditing && id) {
+      const fetchProject = async () => {
+        try {
+          const project = await getProjectById(id);
+          setFormData({
+            ...project,
+            coverImage: project.coverImage || '',
+            theme: project.theme || 'minimalist',
+          });
+        } catch (error) {
+          console.error('Error fetching project:', error);
+          toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'Failed to load project data.',
+          });
+        }
+      };
+
+      fetchProject();
+    }
+  }, [id, isEditing, toast]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -50,12 +98,12 @@ const ProjectEditor = ({ project = null }) => {
   const handleAddTool = () => {
     setFormData({
       ...formData,
-      tools: [...formData.tools, { name: '', icon: '' }],
+      tools: [...(formData.tools || []), { name: '', icon: '' }],
     });
   };
 
   const handleToolChange = (index: number, field: string, value: string) => {
-    const updatedTools = [...formData.tools];
+    const updatedTools = [...(formData.tools || [])];
     updatedTools[index] = { ...updatedTools[index], [field]: value };
     
     setFormData({
@@ -65,7 +113,7 @@ const ProjectEditor = ({ project = null }) => {
   };
 
   const handleRemoveTool = (index: number) => {
-    const updatedTools = formData.tools.filter((_, i) => i !== index);
+    const updatedTools = (formData.tools || []).filter((_, i) => i !== index);
     setFormData({
       ...formData,
       tools: updatedTools,
@@ -75,12 +123,12 @@ const ProjectEditor = ({ project = null }) => {
   const handleAddMedia = () => {
     setFormData({
       ...formData,
-      media: [...formData.media, { type: 'image', url: '', caption: '' }],
+      media: [...(formData.media || []), { type: 'image', url: '', caption: '' }],
     });
   };
 
   const handleMediaChange = (index: number, field: string, value: string) => {
-    const updatedMedia = [...formData.media];
+    const updatedMedia = [...(formData.media || [])];
     updatedMedia[index] = { ...updatedMedia[index], [field]: value };
     
     setFormData({
@@ -90,7 +138,7 @@ const ProjectEditor = ({ project = null }) => {
   };
 
   const handleRemoveMedia = (index: number) => {
-    const updatedMedia = formData.media.filter((_, i) => i !== index);
+    const updatedMedia = (formData.media || []).filter((_, i) => i !== index);
     setFormData({
       ...formData,
       media: updatedMedia,
@@ -100,12 +148,12 @@ const ProjectEditor = ({ project = null }) => {
   const handleAddTimelineItem = () => {
     setFormData({
       ...formData,
-      timeline: [...formData.timeline, { date: '', title: '', description: '' }],
+      timeline: [...(formData.timeline || []), { date: '', title: '', description: '' }],
     });
   };
 
   const handleTimelineChange = (index: number, field: string, value: string) => {
-    const updatedTimeline = [...formData.timeline];
+    const updatedTimeline = [...(formData.timeline || [])];
     updatedTimeline[index] = { ...updatedTimeline[index], [field]: value };
     
     setFormData({
@@ -115,11 +163,77 @@ const ProjectEditor = ({ project = null }) => {
   };
 
   const handleRemoveTimelineItem = (index: number) => {
-    const updatedTimeline = formData.timeline.filter((_, i) => i !== index);
+    const updatedTimeline = (formData.timeline || []).filter((_, i) => i !== index);
     setFormData({
       ...formData,
       timeline: updatedTimeline,
     });
+  };
+
+  const handleFileUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    
+    const file = e.target.files[0];
+    setFileUploading(true);
+    
+    try {
+      // Upload file to Supabase storage
+      const projectId = formData.id || 'new';
+      const fileUrl = await uploadFile(file, projectId);
+      
+      // Update media item with the file URL
+      const updatedMedia = [...(formData.media || [])];
+      updatedMedia[index] = { ...updatedMedia[index], url: fileUrl, type: 'image' };
+      
+      setFormData({
+        ...formData,
+        media: updatedMedia,
+      });
+      
+      toast({
+        title: 'File uploaded',
+        description: 'The file has been uploaded successfully.',
+      });
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Upload failed',
+        description: error.message || 'Failed to upload file',
+      });
+    } finally {
+      setFileUploading(false);
+    }
+  };
+
+  const handleCoverImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    
+    const file = e.target.files[0];
+    setFileUploading(true);
+    
+    try {
+      // Upload file to Supabase storage
+      const projectId = formData.id || 'new';
+      const fileUrl = await uploadFile(file, projectId);
+      
+      setFormData({
+        ...formData,
+        coverImage: fileUrl,
+      });
+      
+      toast({
+        title: 'Cover image uploaded',
+        description: 'The cover image has been uploaded successfully.',
+      });
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Upload failed',
+        description: error.message || 'Failed to upload cover image',
+      });
+    } finally {
+      setFileUploading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent, status: 'draft' | 'published') => {
@@ -138,26 +252,71 @@ const ProjectEditor = ({ project = null }) => {
     }
 
     try {
-      // In a real app, we'd call an API to save the project
-      console.log('Saving project:', { ...formData, status });
-      
-      // Mock success
-      setTimeout(() => {
-        setIsSubmitting(false);
-        toast({
-          title: `Project ${isEditing ? 'updated' : 'created'}!`,
-          description: `Your project has been ${isEditing ? 'updated' : 'created'} as a ${status}.`,
-        });
-        navigate('/dashboard/projects');
-      }, 1000);
-    } catch (error) {
-      setIsSubmitting(false);
+      const projectToSave = {
+        ...formData,
+        status,
+      };
+
+      if (isEditing && id) {
+        await updateProject(id, projectToSave);
+        // Invalidate cached project data
+        queryClient.invalidateQueries({ queryKey: ['project', id] });
+        queryClient.invalidateQueries({ queryKey: ['projects'] });
+      } else {
+        await createProject(projectToSave);
+        // Invalidate cached projects list
+        queryClient.invalidateQueries({ queryKey: ['projects'] });
+      }
+
+      toast({
+        title: `Project ${isEditing ? 'updated' : 'created'}!`,
+        description: `Your project has been ${isEditing ? 'updated' : 'created'} as a ${status}.`,
+      });
+      navigate('/dashboard/projects');
+    } catch (error: any) {
+      console.error('Error saving project:', error);
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: `Failed to ${isEditing ? 'update' : 'create'} project. Please try again.`,
+        description: error.message || `Failed to ${isEditing ? 'update' : 'create'} project. Please try again.`,
       });
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
+  const handleStatusChange = (status: string) => {
+    setFormData({
+      ...formData,
+      status: status as 'draft' | 'published' | 'archived',
+    });
+  };
+
+  const handleThemeChange = (theme: ThemeName) => {
+    setFormData({
+      ...formData,
+      theme,
+    });
+  };
+
+  const handleVisibilityChange = (isPublic: boolean) => {
+    setFormData({
+      ...formData,
+      isPublic,
+    });
+  };
+
+  const calculateProgress = () => {
+    let score = 0;
+    const totalFields = 5; // Basic info, content, media, timeline, tools
+
+    if (formData.title && formData.description) score += 1;
+    if (formData.overview) score += 1;
+    if (formData.media && formData.media.length > 0) score += 1;
+    if (formData.timeline && formData.timeline.length > 0) score += 1;
+    if (formData.tools && formData.tools.length > 0) score += 1;
+
+    return Math.round((score / totalFields) * 100);
   };
 
   return (
@@ -177,14 +336,14 @@ const ProjectEditor = ({ project = null }) => {
           <Button 
             variant="outline" 
             onClick={(e) => handleSubmit(e, 'draft')} 
-            disabled={isSubmitting}
+            disabled={isSubmitting || fileUploading}
           >
             Save as Draft
           </Button>
           <Button 
             className="bg-projectshelf-accent hover:bg-projectshelf-accent/90"
             onClick={(e) => handleSubmit(e, 'published')} 
-            disabled={isSubmitting}
+            disabled={isSubmitting || fileUploading}
           >
             {isSubmitting ? 'Saving...' : `${isEditing ? 'Update' : 'Publish'} Project`}
           </Button>
@@ -227,7 +386,7 @@ const ProjectEditor = ({ project = null }) => {
                       id="description" 
                       name="description" 
                       placeholder="Brief summary of your project" 
-                      value={formData.description}
+                      value={formData.description || ''}
                       onChange={handleChange}
                       rows={3}
                     />
@@ -241,7 +400,7 @@ const ProjectEditor = ({ project = null }) => {
                       Project Category
                     </label>
                     <Select 
-                      value={formData.category}
+                      value={formData.category || 'web-design'}
                       onValueChange={(value) => handleSelectChange('category', value)}
                     >
                       <SelectTrigger>
@@ -262,15 +421,44 @@ const ProjectEditor = ({ project = null }) => {
 
                   <div>
                     <label className="block text-sm font-medium mb-1" htmlFor="coverImage">
-                      Cover Image URL
+                      Cover Image
                     </label>
-                    <Input 
-                      id="coverImage" 
-                      name="coverImage" 
-                      placeholder="https://example.com/image.jpg" 
-                      value={formData.coverImage}
-                      onChange={handleChange}
-                    />
+                    <div className="space-y-2">
+                      {formData.coverImage && (
+                        <div className="relative w-full h-48 bg-gray-100 rounded-md overflow-hidden">
+                          <img 
+                            src={formData.coverImage} 
+                            alt="Cover Preview" 
+                            className="w-full h-full object-cover" 
+                          />
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-2 right-2 w-8 h-8"
+                            onClick={() => setFormData({...formData, coverImage: ''})}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                      <div className="flex gap-2 items-center">
+                        <Input
+                          id="coverImageUpload"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleCoverImageUpload}
+                          className={fileUploading ? "opacity-50 pointer-events-none" : ""}
+                        />
+                        <span className="text-xs text-gray-500">or</span>
+                        <Input 
+                          id="coverImage" 
+                          name="coverImage" 
+                          placeholder="https://example.com/image.jpg" 
+                          value={formData.coverImage}
+                          onChange={handleChange}
+                        />
+                      </div>
+                    </div>
                     <p className="mt-1 text-xs text-gray-500">
                       This will be the main image for your project.
                     </p>
@@ -297,7 +485,7 @@ const ProjectEditor = ({ project = null }) => {
                       id="overview" 
                       name="overview" 
                       placeholder="Introduce your project and explain its purpose" 
-                      value={formData.overview}
+                      value={formData.overview || ''}
                       onChange={handleChange}
                       rows={4}
                     />
@@ -311,7 +499,7 @@ const ProjectEditor = ({ project = null }) => {
                       id="challenge" 
                       name="challenge" 
                       placeholder="Describe the problem you were solving" 
-                      value={formData.challenge}
+                      value={formData.challenge || ''}
                       onChange={handleChange}
                       rows={4}
                     />
@@ -325,7 +513,7 @@ const ProjectEditor = ({ project = null }) => {
                       id="process" 
                       name="process" 
                       placeholder="Explain your process, research, and methodology" 
-                      value={formData.process}
+                      value={formData.process || ''}
                       onChange={handleChange}
                       rows={6}
                     />
@@ -339,7 +527,7 @@ const ProjectEditor = ({ project = null }) => {
                       id="outcome" 
                       name="outcome" 
                       placeholder="Describe the results and impact of your project" 
-                      value={formData.outcome}
+                      value={formData.outcome || ''}
                       onChange={handleChange}
                       rows={4}
                     />
@@ -376,7 +564,7 @@ const ProjectEditor = ({ project = null }) => {
                   </div>
 
                   <div className="space-y-6">
-                    {formData.media.length === 0 ? (
+                    {(!formData.media || formData.media.length === 0) ? (
                       <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
                         <Image className="h-12 w-12 text-gray-400 mx-auto mb-2" />
                         <h3 className="text-gray-500 font-medium">No media added yet</h3>
@@ -404,6 +592,16 @@ const ProjectEditor = ({ project = null }) => {
                             </Button>
                           </div>
 
+                          {item.url && item.type === 'image' && (
+                            <div className="relative w-full h-48 bg-gray-100 rounded-md overflow-hidden mb-4">
+                              <img 
+                                src={item.url} 
+                                alt="Media Preview" 
+                                className="w-full h-full object-cover" 
+                              />
+                            </div>
+                          )}
+
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                               <label className="block text-sm font-medium mb-1" htmlFor={`media-type-${index}`}>
@@ -426,14 +624,37 @@ const ProjectEditor = ({ project = null }) => {
 
                             <div>
                               <label className="block text-sm font-medium mb-1" htmlFor={`media-url-${index}`}>
-                                URL
+                                {item.type === 'image' ? 'Upload / URL' : 'URL'}
                               </label>
-                              <Input 
-                                id={`media-url-${index}`}
-                                placeholder="https://example.com/image.jpg" 
-                                value={item.url || ''}
-                                onChange={(e) => handleMediaChange(index, 'url', e.target.value)}
-                              />
+                              {item.type === 'image' ? (
+                                <div className="flex gap-2">
+                                  <Input
+                                    id={`media-upload-${index}`}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => handleFileUpload(index, e)}
+                                    className={fileUploading ? "opacity-50 pointer-events-none flex-1" : "flex-1"}
+                                  />
+                                  <Input 
+                                    id={`media-url-${index}`}
+                                    placeholder="https://example.com/image.jpg" 
+                                    value={item.url || ''}
+                                    onChange={(e) => handleMediaChange(index, 'url', e.target.value)}
+                                    className="flex-1"
+                                  />
+                                </div>
+                              ) : (
+                                <Input 
+                                  id={`media-url-${index}`}
+                                  placeholder={
+                                    item.type === 'video' 
+                                      ? 'https://youtube.com/watch?v=...'
+                                      : 'https://example.com/embed'
+                                  }
+                                  value={item.url || ''}
+                                  onChange={(e) => handleMediaChange(index, 'url', e.target.value)}
+                                />
+                              )}
                             </div>
                           </div>
 
@@ -484,7 +705,7 @@ const ProjectEditor = ({ project = null }) => {
                   </div>
 
                   <div className="space-y-6">
-                    {formData.timeline.length === 0 ? (
+                    {(!formData.timeline || formData.timeline.length === 0) ? (
                       <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
                         <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-2" />
                         <h3 className="text-gray-500 font-medium">No timeline items yet</h3>
@@ -586,7 +807,7 @@ const ProjectEditor = ({ project = null }) => {
                   </div>
 
                   <div className="space-y-4">
-                    {formData.tools.length === 0 ? (
+                    {(!formData.tools || formData.tools.length === 0) ? (
                       <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
                         <LayoutGrid className="h-12 w-12 text-gray-400 mx-auto mb-2" />
                         <h3 className="text-gray-500 font-medium">No tools added yet</h3>
@@ -649,127 +870,36 @@ const ProjectEditor = ({ project = null }) => {
 
               <TabsContent value="preview">
                 <div className="space-y-6">
-                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 text-center">
-                    <Edit className="h-16 w-16 text-gray-400 mx-auto mb-2" />
-                    <h3 className="text-lg font-medium mb-2">Project Preview</h3>
-                    <p className="text-gray-500 mb-4">Preview how your project will look when published.</p>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium">Preview Your Project</h3>
                     <Button 
-                      variant="outline" 
+                      variant={isPreviewMode ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setPreviewMode(!previewMode)}
+                      onClick={() => setPreviewMode(!isPreviewMode)}
+                      className="ml-auto"
                     >
-                      {previewMode ? 'Exit Preview' : 'Enter Preview Mode'}
+                      {isPreviewMode ? 'Exit Preview' : 'Preview'}
                     </Button>
                   </div>
 
-                  {previewMode && (
-                    <Card className="mt-6">
-                      <CardContent className="p-6">
-                        <h2 className="text-2xl font-bold mb-2">{formData.title || 'Project Title'}</h2>
-                        <p className="text-gray-600 mb-6">{formData.description || 'No description provided yet.'}</p>
-
-                        {formData.coverImage && (
-                          <div className="mb-8">
-                            <img 
-                              src={formData.coverImage} 
-                              alt={formData.title} 
-                              className="w-full h-64 object-cover rounded-lg"
-                            />
-                          </div>
-                        )}
-
-                        {formData.overview && (
-                          <div className="mb-6">
-                            <h3 className="text-lg font-semibold mb-2">Project Overview</h3>
-                            <p className="whitespace-pre-wrap">{formData.overview}</p>
-                          </div>
-                        )}
-
-                        {formData.challenge && (
-                          <div className="mb-6">
-                            <h3 className="text-lg font-semibold mb-2">The Challenge</h3>
-                            <p className="whitespace-pre-wrap">{formData.challenge}</p>
-                          </div>
-                        )}
-
-                        {/* Timeline preview */}
-                        {formData.timeline.length > 0 && (
-                          <div className="mb-6">
-                            <h3 className="text-lg font-semibold mb-4">Timeline</h3>
-                            <div className="space-y-4">
-                              {formData.timeline.map((item, index) => (
-                                <div key={index} className="flex">
-                                  <div className="mr-4 relative">
-                                    <div className="h-4 w-4 rounded-full bg-projectshelf-accent"></div>
-                                    {index < formData.timeline.length - 1 && (
-                                      <div className="absolute top-4 bottom-0 left-1.5 w-0.5 -ml-px bg-gray-300"></div>
-                                    )}
-                                  </div>
-                                  <div className="pb-6">
-                                    <div className="text-sm font-medium text-gray-500">{item.date}</div>
-                                    <div className="font-medium">{item.title}</div>
-                                    <div className="text-gray-600 text-sm mt-1">{item.description}</div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {formData.process && (
-                          <div className="mb-6">
-                            <h3 className="text-lg font-semibold mb-2">Process & Approach</h3>
-                            <p className="whitespace-pre-wrap">{formData.process}</p>
-                          </div>
-                        )}
-
-                        {/* Media Gallery preview */}
-                        {formData.media.length > 0 && (
-                          <div className="mb-6">
-                            <h3 className="text-lg font-semibold mb-4">Gallery</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {formData.media.map((item, index) => (
-                                <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
-                                  {item.type === 'image' && item.url && (
-                                    <img src={item.url} alt={item.caption || `Image ${index + 1}`} className="w-full h-48 object-cover" />
-                                  )}
-                                  {item.type === 'video' && item.url && (
-                                    <div className="h-48 bg-gray-200 flex items-center justify-center">Video Placeholder</div>
-                                  )}
-                                  {item.caption && (
-                                    <div className="p-3 text-sm">{item.caption}</div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {formData.outcome && (
-                          <div className="mb-6">
-                            <h3 className="text-lg font-semibold mb-2">Outcome & Results</h3>
-                            <p className="whitespace-pre-wrap">{formData.outcome}</p>
-                          </div>
-                        )}
-
-                        {/* Tools preview */}
-                        {formData.tools.length > 0 && (
-                          <div className="mb-6">
-                            <h3 className="text-lg font-semibold mb-4">Tools & Technologies</h3>
-                            <div className="flex flex-wrap gap-3">
-                              {formData.tools.map((tool, index) => (
-                                <div key={index} className="bg-gray-100 px-3 py-2 rounded-full text-sm">
-                                  {tool.name}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </CardContent>
+                  {isPreviewMode ? (
+                    <Card className="overflow-hidden">
+                      <ThemePreview project={formData} />
                     </Card>
+                  ) : (
+                    <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 text-center">
+                      <Edit className="h-16 w-16 text-gray-400 mx-auto mb-2" />
+                      <h3 className="text-lg font-medium mb-2">Theme Preview</h3>
+                      <p className="text-gray-500 mb-4">
+                        See how your portfolio will look with different themes. Select a theme and click Preview.
+                      </p>
+                      <div className="max-w-md mx-auto mt-6">
+                        <ThemeSelector />
+                      </div>
+                    </div>
                   )}
 
-                  <div className="flex justify-between">
+                  <div className="flex justify-between mt-6">
                     <Button 
                       variant="outline" 
                       onClick={() => setSelectedTab('tools')}
@@ -780,14 +910,14 @@ const ProjectEditor = ({ project = null }) => {
                       <Button 
                         variant="outline" 
                         onClick={(e) => handleSubmit(e, 'draft')} 
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || fileUploading}
                       >
                         Save as Draft
                       </Button>
                       <Button 
                         className="bg-projectshelf-accent hover:bg-projectshelf-accent/90"
                         onClick={(e) => handleSubmit(e, 'published')} 
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || fileUploading}
                       >
                         {isSubmitting ? 'Saving...' : `${isEditing ? 'Update' : 'Publish'} Project`}
                       </Button>
@@ -802,7 +932,10 @@ const ProjectEditor = ({ project = null }) => {
         <div className="w-full lg:w-1/4">
           <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
             <h3 className="font-medium mb-3">Project Status</h3>
-            <Select defaultValue="draft">
+            <Select 
+              value={formData.status} 
+              onValueChange={handleStatusChange}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
@@ -812,17 +945,35 @@ const ProjectEditor = ({ project = null }) => {
                 <SelectItem value="archived">Archived</SelectItem>
               </SelectContent>
             </Select>
+            <div className="mt-4">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.isPublic}
+                  onChange={(e) => handleVisibilityChange(e.target.checked)}
+                  className="rounded border-gray-300"
+                />
+                <span>Make project public</span>
+              </label>
+              <p className="text-xs text-gray-500 mt-1">
+                Public projects can be viewed by anyone with the link
+              </p>
+            </div>
           </div>
 
           <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
             <h3 className="font-medium mb-3">Theme</h3>
-            <Select defaultValue="minimalist">
+            <Select 
+              value={formData.theme} 
+              onValueChange={(value) => handleThemeChange(value as ThemeName)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select theme" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="minimalist">Minimalist</SelectItem>
                 <SelectItem value="bold">Bold & Creative</SelectItem>
+                <SelectItem value="elegant">Elegant</SelectItem>
               </SelectContent>
             </Select>
             <div className="mt-3 text-xs text-gray-500">
@@ -833,10 +984,13 @@ const ProjectEditor = ({ project = null }) => {
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <h3 className="font-medium mb-3">Completion Progress</h3>
             <div className="w-full bg-gray-200 rounded-full h-2.5">
-              <div className="bg-projectshelf-accent h-2.5 rounded-full" style={{ width: '40%' }}></div>
+              <div 
+                className="bg-projectshelf-accent h-2.5 rounded-full" 
+                style={{ width: `${calculateProgress()}%` }}
+              ></div>
             </div>
             <div className="mt-3 text-xs text-gray-500">
-              Complete all sections to publish your case study.
+              {calculateProgress()}% complete. Fill out all sections to improve your project showcase.
             </div>
 
             <div className="mt-4 space-y-2">
@@ -849,15 +1003,15 @@ const ProjectEditor = ({ project = null }) => {
                 <span className="ml-2 text-sm">Project Content</span>
               </div>
               <div className="flex items-center">
-                <div className={`h-4 w-4 rounded-full ${formData.media.length > 0 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                <div className={`h-4 w-4 rounded-full ${formData.media && formData.media.length > 0 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
                 <span className="ml-2 text-sm">Media Gallery</span>
               </div>
               <div className="flex items-center">
-                <div className={`h-4 w-4 rounded-full ${formData.timeline.length > 0 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                <div className={`h-4 w-4 rounded-full ${formData.timeline && formData.timeline.length > 0 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
                 <span className="ml-2 text-sm">Timeline</span>
               </div>
               <div className="flex items-center">
-                <div className={`h-4 w-4 rounded-full ${formData.tools.length > 0 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                <div className={`h-4 w-4 rounded-full ${formData.tools && formData.tools.length > 0 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
                 <span className="ml-2 text-sm">Tools & Tech</span>
               </div>
             </div>
@@ -868,4 +1022,5 @@ const ProjectEditor = ({ project = null }) => {
   );
 };
 
-export default ProjectEditor;
+// Default export for the wrapped component
+export default ProjectEditorWithTheme;
