@@ -5,6 +5,13 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const createProject = async (projectData: Project) => {
   try {
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
     // First, create the project record
     const { data: project, error: projectError } = await supabase
       .from('projects')
@@ -21,6 +28,7 @@ export const createProject = async (projectData: Project) => {
         theme: projectData.theme,
         is_public: projectData.isPublic || false,
         slug: projectData.slug || createSlug(projectData.title),
+        user_id: user.id, // Add the user_id field
       })
       .select()
       .single();
