@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
 import AppLayout from "./components/layout/AppLayout";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import Home from "./pages/Home";
@@ -13,6 +14,7 @@ import Dashboard from "./pages/dashboard/Dashboard";
 import Projects from "./pages/dashboard/Projects";
 import Analytics from "./pages/dashboard/Analytics";
 import NewProject from "./pages/dashboard/NewProject";
+import ProjectDetail from "./pages/dashboard/ProjectDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,33 +22,36 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
       <BrowserRouter>
-        <Routes>
-          {/* Public Routes */}
-          <Route element={<AppLayout />}>
-            <Route path="/" element={<Home />} />
-          </Route>
+        <AuthProvider>
+          <Toaster />
+          <Sonner />
+          <Routes>
+            {/* Public Routes */}
+            <Route element={<AppLayout />}>
+              <Route path="/" element={<Home />} />
+            </Route>
 
-          {/* Auth Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
+            {/* Auth Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
 
-          {/* Dashboard Routes */}
-          <Route path="/dashboard" element={<DashboardLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="projects" element={<Projects />} />
-            <Route path="projects/new" element={<NewProject />} />
-            <Route path="analytics" element={<Analytics />} />
-            <Route path="media" element={<Dashboard />} />
-            <Route path="profile" element={<Dashboard />} />
-            <Route path="settings" element={<Dashboard />} />
-          </Route>
+            {/* Dashboard Routes */}
+            <Route path="/dashboard" element={<DashboardLayout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="projects" element={<Projects />} />
+              <Route path="projects/new" element={<NewProject />} />
+              <Route path="projects/:id" element={<ProjectDetail />} />
+              <Route path="analytics" element={<Analytics />} />
+              <Route path="media" element={<Dashboard />} />
+              <Route path="profile" element={<Dashboard />} />
+              <Route path="settings" element={<Dashboard />} />
+            </Route>
 
-          {/* 404 - Catch All */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+            {/* 404 - Catch All */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
