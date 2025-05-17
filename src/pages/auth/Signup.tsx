@@ -116,3 +116,6 @@ const Signup = () => {
       </Card>
     </div>
   );
+};
+
+export default Signup;
