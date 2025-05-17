@@ -20,6 +20,16 @@ const themes: { value: ThemeName; label: string; description: string }[] = [
     label: 'Elegant', 
     description: 'Refined typography with sophisticated layout' 
   },
+  { 
+    value: 'dark', 
+    label: 'Dark Mode', 
+    description: 'Modern dark theme with blue accents' 
+  },
+  { 
+    value: 'gradient', 
+    label: 'Gradient', 
+    description: 'Stunning gradient backgrounds with vibrant colors' 
+  },
 ];
 
 const ThemeSelector: React.FC = () => {

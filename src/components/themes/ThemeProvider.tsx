@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState } from 'react';
 
-export type ThemeName = 'minimalist' | 'bold' | 'elegant';
+export type ThemeName = 'minimalist' | 'bold' | 'elegant' | 'dark' | 'gradient';
 
 interface ThemeContextType {
   currentTheme: ThemeName;

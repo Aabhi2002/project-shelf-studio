@@ -5,6 +5,8 @@ import { useTheme, ThemeName } from './ThemeProvider';
 import MinimalistTheme from './MinimalistTheme';
 import BoldTheme from './BoldTheme';
 import ElegantTheme from './ElegantTheme';
+import DarkTheme from './DarkTheme';
+import GradientTheme from './GradientTheme';
 
 interface ThemePreviewProps {
   project: Partial<Project>;
@@ -21,8 +23,12 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({ project }) => {
         return <BoldTheme project={project} />;
       case 'elegant':
         return <ElegantTheme project={project} />;
+      case 'dark':
+        return <DarkTheme project={project} />;
+      case 'gradient':
+        return <GradientTheme project={project} />;
       default:
-        return <MinimalistTheme project={project} />;
+        return <BoldTheme project={project} />;
     }
   };
 
