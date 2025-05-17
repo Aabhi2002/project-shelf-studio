@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -17,20 +16,29 @@ import { createProject, updateProject, getProjectById, uploadFile } from '@/serv
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useQueryClient } from '@tanstack/react-query';
 
+// Define props interface for the ProjectEditorWithTheme component
+interface ProjectEditorProps {
+  projectId?: string;
+}
+
 // Wrapper component to provide theme context
-export const ProjectEditorWithTheme = () => {
+export const ProjectEditorWithTheme: React.FC<ProjectEditorProps> = ({ projectId }) => {
   return (
     <ThemeProvider>
-      <ProjectEditorInner />
+      <ProjectEditorInner projectId={projectId} />
     </ThemeProvider>
   );
 };
 
-const ProjectEditorInner = () => {
+// Define props for the inner component too
+interface ProjectEditorInnerProps {
+  projectId?: string;
+}
+
+const ProjectEditorInner: React.FC<ProjectEditorInnerProps> = ({ projectId }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { id } = useParams();
-  const isEditing = !!id;
+  const isEditing = !!projectId;
   const { user } = useRequireAuth();
   const { setPreviewMode, isPreviewMode } = useTheme();
   const queryClient = useQueryClient();
@@ -58,10 +66,10 @@ const ProjectEditorInner = () => {
 
   // Fetch project data when editing
   useEffect(() => {
-    if (isEditing && id) {
+    if (isEditing && projectId) {
       const fetchProject = async () => {
         try {
-          const project = await getProjectById(id);
+          const project = await getProjectById(projectId);
           setFormData({
             ...project,
             coverImage: project.coverImage || '',
@@ -79,7 +87,7 @@ const ProjectEditorInner = () => {
 
       fetchProject();
     }
-  }, [id, isEditing, toast]);
+  }, [projectId, isEditing, toast]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -257,10 +265,10 @@ const ProjectEditorInner = () => {
         status,
       };
 
-      if (isEditing && id) {
-        await updateProject(id, projectToSave);
+      if (isEditing && projectId) {
+        await updateProject(projectId, projectToSave);
         // Invalidate cached project data
-        queryClient.invalidateQueries({ queryKey: ['project', id] });
+        queryClient.invalidateQueries({ queryKey: ['project', projectId] });
         queryClient.invalidateQueries({ queryKey: ['projects'] });
       } else {
         await createProject(projectToSave);
