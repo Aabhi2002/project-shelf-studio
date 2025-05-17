@@ -8,7 +8,9 @@ const ProjectDetail = () => {
   const { id } = useParams();
   useRequireAuth();
   
-  return <ProjectEditorWithTheme projectId={id} />;
+  // The ProjectEditorWithTheme component accepts projectId as a prop
+  // but needs to be explicitly typed
+  return id ? <ProjectEditorWithTheme projectId={id} /> : null;
 };
 
 export default ProjectDetail;

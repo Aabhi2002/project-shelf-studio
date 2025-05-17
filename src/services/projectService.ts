@@ -264,8 +264,8 @@ export const getProjectById = async (projectId: string) => {
       challenge: project.challenge,
       process: project.process,
       outcome: project.outcome,
-      status: project.status,
-      theme: project.theme,
+      status: project.status as 'draft' | 'published' | 'archived', // Type cast to ensure type safety
+      theme: project.theme as 'minimalist' | 'bold' | 'elegant', // Type cast to ensure type safety
       isPublic: project.is_public,
       slug: project.slug,
       createdAt: project.created_at,
