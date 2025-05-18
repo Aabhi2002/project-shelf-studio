@@ -184,7 +184,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setIsLoading(true);
       await supabase.auth.signOut();
-      navigate('/login');
+      setUser(null);
+      setProfile(null);
+      
+      // Add a small delay to ensure state is cleared
+      setTimeout(() => {
+        // Only navigate if we're not already on the login page
+        if (!window.location.pathname.includes('/login')) {
+          navigate('/login', { replace: true });
+        }
+      }, 100);
+
       toast({
         title: 'Signed out',
         description: 'You have been signed out successfully.',
