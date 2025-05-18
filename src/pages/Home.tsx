@@ -296,9 +296,6 @@ const Home = () => {
                       Start Creating Free <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
-                  <Button size="lg" variant="outline" className="group">
-                    <Play className="mr-2 h-4 w-4 group-hover:text-indigo-600" /> Watch 60s Demo
-                  </Button>
                 </motion.div>
               </motion.div>
 
@@ -358,7 +355,7 @@ const Home = () => {
                 description:
                   'Beautiful templates with live edit mode. Customize colors, typography, and layout to match your personal brand without writing a single line of code.',
                 icon: <Palette className="h-6 w-6" />,
-                image: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b',
+                image: '/assets/a.png',
               },
               {
                 title: '/username URLs',
@@ -372,15 +369,15 @@ const Home = () => {
                 description:
                   'Real data on clicks, visitors, and interest per project. Understand which work resonates most with your audience and optimize your portfolio accordingly.',
                 icon: <BarChart3 className="h-6 w-6" />,
-                image: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b',
+                image: '/assets/ana.jpg',
               },
-              {
-                title: 'Public/Private Toggle',
-                description:
-                  'Share selectively and keep drafts safe. Control exactly who sees what with granular privacy settings for each project in your portfolio.',
-                icon: <Lock className="h-6 w-6" />,
-                image: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b',
-              },
+              // {
+              //   title: 'Public/Private Toggle',
+              //   description:
+              //     'Share selectively and keep drafts safe. Control exactly who sees what with granular privacy settings for each project in your portfolio.',
+              //   icon: <Lock className="h-6 w-6" />,
+              //   image: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b',
+              // },
             ].map((feature, index) => (
               <motion.div
                 key={index}
@@ -400,9 +397,6 @@ const Home = () => {
                     <h3 className="text-2xl font-bold">{feature.title}</h3>
                   </div>
                   <p className="text-lg text-slate-600 mb-6">{feature.description}</p>
-                  <Button variant="outline" className="group">
-                    Learn more <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  </Button>
                 </div>
 
                 <motion.div
@@ -570,38 +564,41 @@ const Home = () => {
               transition={{ duration: 0.8 }}
               className="overflow-x-auto"
             >
-              <table className="w-full border-collapse">
+              <table className="w-full border-collapse rounded-lg overflow-hidden shadow">
                 <thead>
                   <tr className="bg-slate-100">
-                    <th className="p-4 text-left font-semibold">Feature</th>
-                    <th className="p-4 text-center font-semibold">ProjectShelf</th>
-                    <th className="p-4 text-center font-semibold">Behance</th>
-                    <th className="p-4 text-center font-semibold">Notion</th>
+                    <th className="p-4 text-left font-semibold border-b border-slate-200">Feature</th>
+                    <th className="p-4 text-center font-semibold border-b border-slate-200">ProjectShelf</th>
+                    <th className="p-4 text-center font-semibold border-b border-slate-200">Behance</th>
+                    <th className="p-4 text-center font-semibold border-b border-slate-200">Notion</th>
                   </tr>
                 </thead>
                 <tbody>
                   {comparisonData.map((item, index) => (
-                    <tr key={index}>
-                      <td className="py-3 px-4">{item.feature}</td>
-                      <td className="py-3 px-4 text-center">
+                    <tr
+                      key={index}
+                      className={index % 2 === 0 ? "bg-white" : "bg-slate-50"}
+                    >
+                      <td className="py-3 px-4 border-b border-slate-100">{item.feature}</td>
+                      <td className="py-3 px-4 text-center border-b border-slate-100">
                         {typeof item.projectShelf === 'boolean' ? (
-                          item.projectShelf ? <CheckCircle2 className="text-green-500" /> : <XCircle className="text-red-500" />
+                          item.projectShelf ? <CheckCircle2 className="text-green-500 mx-auto" size={24} /> : <XCircle className="text-red-500 mx-auto" size={24} />
                         ) : (
-                          <span className="text-amber-500">{item.projectShelf}</span>
+                          <span className="text-amber-500 font-semibold">{item.projectShelf}</span>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-3 px-4 text-center border-b border-slate-100">
                         {typeof item.behance === 'boolean' ? (
-                          item.behance ? <CheckCircle2 className="text-green-500" /> : <XCircle className="text-red-500" />
+                          item.behance ? <CheckCircle2 className="text-green-500 mx-auto" size={24} /> : <XCircle className="text-red-500 mx-auto" size={24} />
                         ) : (
-                          <span className="text-amber-500">{item.behance}</span>
+                          <span className="text-amber-500 font-semibold">{item.behance}</span>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-3 px-4 text-center border-b border-slate-100">
                         {typeof item.notion === 'boolean' ? (
-                          item.notion ? <CheckCircle2 className="text-green-500" /> : <XCircle className="text-red-500" />
+                          item.notion ? <CheckCircle2 className="text-green-500 mx-auto" size={24} /> : <XCircle className="text-red-500 mx-auto" size={24} />
                         ) : (
-                          <span className="text-amber-500">{item.notion}</span>
+                          <span className="text-amber-500 font-semibold">{item.notion}</span>
                         )}
                       </td>
                     </tr>
