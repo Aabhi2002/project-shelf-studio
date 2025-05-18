@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, Eye, Heart, MessageCircle, BarChart3, Zap, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 const Dashboard = () => {
   const projects = [
@@ -11,6 +11,8 @@ const Dashboard = () => {
     { id: 2, title: 'Mobile App UI/UX', views: 198, likes: 23, comments: 12 },
     { id: 3, title: 'Brand Identity Design', views: 147, likes: 8, comments: 4 }
   ];
+
+  useRequireAuth();
 
   return (
     <div className="p-6">

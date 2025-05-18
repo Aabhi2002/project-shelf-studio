@@ -1,4 +1,3 @@
-
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -97,11 +96,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      // Fetch profile to get username
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', user.id)
+          .single();
+
+        if (profile?.username) {
+          navigate(`/${profile.username}/dashboard`);
+        } else {
+          navigate('/dashboard');
+        }
+      }
+
       toast({
         title: 'Sign in successful',
         description: 'Welcome back!',
       });
-      navigate('/dashboard');
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -116,7 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
       });
@@ -130,11 +144,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      if (data.user) {
+        // Create profile with username
+        const username = email.split('@')[0]; // Use email prefix as username
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              id: data.user.id,
+              username,
+              email: data.user.email,
+            }
+          ]);
+
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
+          navigate('/dashboard');
+        } else {
+          navigate(`/${username}/dashboard`);
+        }
+      }
+
       toast({
         title: 'Sign up successful',
         description: 'Welcome to ProjectShelf!',
       });
-      navigate('/dashboard');
     } catch (error: any) {
       toast({
         variant: 'destructive',

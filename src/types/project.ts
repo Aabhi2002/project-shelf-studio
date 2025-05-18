@@ -1,4 +1,3 @@
-
 export interface TimelineItem {
   id?: string;
   date: string;
@@ -32,12 +31,14 @@ export interface Project {
   process?: string;
   outcome?: string;
   status: 'draft' | 'published' | 'archived';
-  theme: 'minimalist' | 'bold' | 'elegant';
+  theme: 'minimalist' | 'bold' | 'elegant' | 'gray' | 'gradient';
   isPublic?: boolean;
   slug?: string;
   createdAt?: string;
   updatedAt?: string;
   userId?: string;
+  liveUrl?: string;
+  sourceCodeUrl?: string;
   
   // Related items
   timeline?: TimelineItem[];

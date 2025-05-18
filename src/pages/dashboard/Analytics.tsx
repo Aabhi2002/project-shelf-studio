@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, LineChart, ResponsiveContainer, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Line } from 'recharts';
 import { ArrowUpRight, Users, Eye, MousePointerClick, Clock } from 'lucide-react';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 const Analytics = () => {
   const [timeRange, setTimeRange] = useState('30');
@@ -66,6 +66,8 @@ const Analytics = () => {
     { date: '05/13', visitors: 35 },
     { date: '05/14', visitors: 42 },
   ];
+
+  useRequireAuth();
 
   return (
     <div className="p-6">

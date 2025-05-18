@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useTheme, ThemeName } from './ThemeProvider';
 import { RadioGroup } from '@/components/ui/radio-group';
@@ -21,14 +20,14 @@ const themes: { value: ThemeName; label: string; description: string }[] = [
     description: 'Refined typography with sophisticated layout' 
   },
   { 
-    value: 'dark', 
-    label: 'Dark Mode', 
-    description: 'Modern dark theme with blue accents' 
+    value: 'gray', 
+    label: 'Gray Scale', 
+    description: 'A modern look using shades of gray' 
   },
   { 
     value: 'gradient', 
-    label: 'Gradient', 
-    description: 'Stunning gradient backgrounds with vibrant colors' 
+    label: 'Gradient Flow', 
+    description: 'Smooth color transitions for a dynamic feel' 
   },
 ];
 

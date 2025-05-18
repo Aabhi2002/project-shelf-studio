@@ -1,0 +1,142 @@
+/* src/styles/themes.css */
+
+/* Base styles that apply unless overridden by a theme */
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Minimalist Theme (Default) */
+.theme-minimalist {
+  --background-color: #ffffff;
+  --text-color: #333333;
+  --heading-color: #333333;
+  --section-background: #f9fafb;
+  --card-background: #ffffff;
+  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --border-color: #e5e7eb;
+  --primary-color: #2563eb; /* blue-600 */
+  --secondary-color: #6b7280; /* gray-500 */
+}
+
+.theme-minimalist .text-gray-800 { color: var(--text-color); }
+.theme-minimalist .text-gray-700 { color: #374151; }
+.theme-minimalist .text-gray-600 { color: #4b5563; }
+.theme-minimalist .text-gray-500 { color: var(--secondary-color); }
+
+/* Gray Theme */
+.theme-gray {
+  --background-color: #f3f4f6;
+  --text-color: #1f2937;
+  --heading-color: #1f2937;
+  --section-background: #e5e7eb;
+  --card-background: #ffffff;
+  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --border-color: #d1d5db;
+  --primary-color: #1d4ed8; /* blue-700 */
+  --secondary-color: #4b5563; /* gray-600 */
+}
+
+.theme-gray .text-gray-800 { color: var(--text-color); }
+.theme-gray .text-gray-700 { color: #374151; }
+.theme-gray .text-gray-600 { color: var(--secondary-color); }
+.theme-gray .text-gray-500 { color: #6b7280; }
+
+/* Gradient Theme */
+.theme-gradient {
+  --background-color: linear-gradient(to bottom right, #f0f4f8, #d9e2ec);
+  --text-color: #1f2937;
+  --heading-color: #1f2937;
+  --section-background: rgba(255, 255, 255, 0.8);
+  --card-background: rgba(255, 255, 255, 0.9);
+  --card-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+  --border-color: #bfdbfe; /* blue-200 */
+  --primary-color: #1e40af; /* blue-800 */
+  --secondary-color: #374151; /* gray-700 */
+  backdrop-filter: blur(5px); /* Apply blur to the body */
+}
+
+.theme-gradient .text-gray-800 { color: var(--text-color); }
+.theme-gradient .text-gray-700 { color: var(--secondary-color); }
+.theme-gradient .text-gray-600 { color: #4b5563; }
+.theme-gradient .text-gray-500 { color: #6b7280; }
+
+/* General styles applied based on theme variables */
+.theme-minimalist,
+.theme-gray,
+.theme-gradient {
+  background: var(--background-color);
+  color: var(--text-color);
+}
+
+.theme-minimalist h1, .theme-minimalist h2, .theme-minimalist h3, .theme-minimalist h4,
+.theme-gray h1, .theme-gray h2, .theme-gray h3, .theme-gray h4,
+.theme-gradient h1, .theme-gradient h2, .theme-gradient h3, .theme-gradient h4 {
+  color: var(--heading-color);
+}
+
+.theme-minimalist section:not(.no-theme-bg),
+.theme-gray section:not(.no-theme-bg),
+.theme-gradient section:not(.no-theme-bg) {
+  background-color: var(--section-background);
+}
+
+.theme-minimalist .bg-gray-50,
+.theme-gray .bg-gray-50,
+.theme-gradient .bg-gray-50 {
+   background-color: var(--section-background); /* Ensure consistency with section background */
+}
+
+/* Card and List Item Styling */
+.theme-minimalist .bg-white.rounded-lg,
+.theme-gray .bg-white.rounded-lg,
+.theme-gradient .bg-white.rounded-lg {
+  background-color: var(--card-background);
+  box-shadow: var(--card-shadow);
+}
+
+/* Timeline border color */
+.theme-minimalist .border-gray-300,
+.theme-gray .border-gray-300,
+.theme-gradient .border-gray-300 {
+    border-color: var(--border-color);
+}
+
+/* Timeline dot color */
+.theme-minimalist .bg-blue-600,
+.theme-gray .bg-blue-600,
+.theme-gradient .bg-blue-600 {
+    background-color: var(--primary-color);
+}
+
+/* Tools and Technologies tags */
+.theme-minimalist .bg-blue-100 {
+  background-color: #dbeafe; /* blue-100 */
+  color: #2563eb; /* blue-600 */
+}
+
+.theme-gray .bg-blue-100 {
+  background-color: #bfdbfe; /* blue-200 */
+  color: #1d4ed8; /* blue-700 */
+}
+
+.theme-gradient .bg-blue-100 {
+  background-color: #93c5fd; /* blue-300 */
+  color: #1e40af; /* blue-800 */
+}
+
+/* Specific text color overrides for tools */
+.theme-minimalist .text-blue-500 { color: #3b82f6; }
+.theme-gray .text-blue-500 { color: #2563eb; }
+.theme-gradient .text-blue-500 { color: #1d4ed8; }
+
+.theme-minimalist .text-green-500 { color: #22c55e; }
+.theme-gray .text-green-500 { color: #16a34a; }
+.theme-gradient .text-green-500 { color: #15803d; }
+
+.theme-minimalist .text-purple-500 { color: #a855f7; }
+.theme-gray .text-purple-500 { color: #9333ea; }
+.theme-gradient .text-purple-500 { color: #7e22ce; }
+
+.theme-minimalist .text-gray-700 { color: #374151; }
+.theme-gray .text-gray-700 { color: #374151; }
+.theme-gradient .text-gray-700 { color: #4b5563; } 

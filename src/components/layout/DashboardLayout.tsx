@@ -1,16 +1,17 @@
-
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Home, Image, LayoutGrid, UserCircle, BarChart, Settings, LogOut } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 const DashboardLayout = () => {
   const location = useLocation();
+  const { signOut } = useAuth();
   
   const navItems = [
     { icon: Home, label: 'Overview', path: '/dashboard' },
     { icon: LayoutGrid, label: 'Projects', path: '/dashboard/projects' },
-    { icon: Image, label: 'Media', path: '/dashboard/media' },
+    // { icon: Image, label: 'Media', path: '/dashboard/media' },
     { icon: BarChart, label: 'Analytics', path: '/dashboard/analytics' },
     { icon: UserCircle, label: 'Profile', path: '/dashboard/profile' },
     { icon: Settings, label: 'Settings', path: '/dashboard/settings' },
@@ -44,13 +45,10 @@ const DashboardLayout = () => {
           ))}
 
           <div className="pt-4 mt-4 border-t border-gray-200">
-            <Link
-              to="/logout"
-              className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100"
-            >
-              <LogOut size={18} />
+            <Button variant="ghost" className="w-full justify-start" onClick={signOut}>
+              <LogOut className="mr-2 h-4 w-4" />
               Logout
-            </Link>
+            </Button>
           </div>
         </nav>
       </aside>

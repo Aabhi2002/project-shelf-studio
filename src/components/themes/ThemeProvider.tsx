@@ -1,7 +1,6 @@
-
 import React, { createContext, useContext, useState } from 'react';
 
-export type ThemeName = 'minimalist' | 'bold' | 'elegant' | 'dark' | 'gradient';
+export type ThemeName = 'minimalist' | 'bold' | 'elegant' | 'gray' | 'gradient';
 
 interface ThemeContextType {
   currentTheme: ThemeName;
@@ -21,7 +20,7 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentTheme, setCurrentTheme] = useState<ThemeName>('bold');
+  const [currentTheme, setCurrentTheme] = useState<ThemeName>('minimalist');
   const [isPreviewMode, setPreviewMode] = useState(false);
 
   return (

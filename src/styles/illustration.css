@@ -1,0 +1,280 @@
+/* Workspace & Laptop */
+.workspace {
+    position: relative;
+    z-index: 2;
+}
+
+.laptop {
+    position: relative;
+    width: 400px;
+    height: 250px;
+}
+
+.laptop-screen {
+    background: #1a1a1a;
+    border-radius: 10px;
+    padding: 15px;
+    height: calc(100% - 20px);
+    border: 2px solid #333;
+    position: relative;
+    overflow: hidden;
+}
+
+.laptop-base {
+    height: 20px;
+    background: #333;
+    border-radius: 0 0 10px 10px;
+    width: 440px;
+    margin-left: -20px;
+}
+
+/* Code Window */
+.code-window {
+    background: #1e1e1e;
+    border-radius: 8px;
+    height: 100%;
+    overflow: hidden;
+}
+
+.window-header {
+    background: #333;
+    padding: 8px;
+    display: flex;
+    gap: 6px;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ff5f56;
+}
+
+.dot:nth-child(2) {
+    background: #ffbd2e;
+}
+
+.dot:nth-child(3) {
+    background: #27c93f;
+}
+
+.code-content {
+    padding: 15px;
+}
+
+.code-line {
+    height: 8px;
+    background: linear-gradient(90deg, #f97316 0%, #ec4899 100%);
+    border-radius: 4px;
+    margin: 10px 0;
+    opacity: 0.6;
+}
+
+/* UI Cards */
+.ui-card,
+.code-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 20px;
+    position: absolute;
+    background: rgba(40, 40, 40, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    animation: float 3s ease-in-out infinite;
+}
+
+.ui-card {
+    top: -16%;
+    left: -25%;
+    animation-delay: 1.5s;
+}
+
+.code-card {
+    bottom: -29%;
+    position: absolute;
+    right: 4%;
+    animation-delay: 2s;
+}
+
+/* Mobile App Frame */
+.mobile-app {
+    position: absolute;
+    width: 120px;
+    height: 200px;
+    top: 20%;
+    left: 105%;
+    background: rgba(40, 40, 40, 0.8);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    animation: float 3s ease-in-out infinite;
+    animation-delay: 1s;
+}
+
+.app-header {
+    height: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.app-line {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    margin: 8px 0;
+}
+
+/* Browser Window */
+.browser {
+    position: absolute;
+    width: 200px;
+    height: 150px;
+    top: 60%;
+    left: 5%;
+    background: rgba(40, 40, 40, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    animation: float 3s ease-in-out infinite;
+    animation-delay: 0.5s;
+}
+
+.browser-header {
+    height: 25px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.browser-line {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    margin: 8px 0;
+}
+
+.floating-item i {
+    font-size: 1.2rem;
+    color: #f97316;
+}
+
+.floating-item span {
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Animations */
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-20px) rotate(2deg);
+    }
+}
+
+@keyframes codetype {
+    0% {
+        width: 0;
+        opacity: 0.3;
+    }
+
+    50% {
+        width: 100%;
+        opacity: 0.6;
+    }
+
+    100% {
+        width: 0;
+        opacity: 0.3;
+    }
+}
+
+/* Glow Effects */
+.laptop-screen::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, #f97316 0%, #ec4899 100%);
+    opacity: 0.1;
+    filter: blur(50px);
+    animation: glow 4s infinite;
+}
+
+@keyframes glow {
+
+    0%,
+    100% {
+        opacity: 0.1;
+    }
+
+    50% {
+        opacity: 0.2;
+    }
+}
+
+/* Responsive Design */
+@media screen and (max-width: 1200px) {
+    .laptop {
+        width: 350px;
+        height: 220px;
+    }
+
+    .laptop-base {
+        width: 390px;
+    }
+}
+
+@media screen and (max-width: 968px) {
+    .illustration-container {
+        height: 450px;
+    }
+
+    .laptop {
+        width: 300px;
+        height: 190px;
+    }
+
+    .laptop-base {
+        width: 340px;
+    }
+
+    .floating-item {
+        transform: scale(0.8);
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .illustration-container {
+        height: 350px;
+    }
+
+    .laptop {
+        width: 260px;
+        height: 165px;
+    }
+
+    .laptop-base {
+        width: 300px;
+    }
+
+    .floating-item {
+        transform: scale(0.7);
+    }
+} 

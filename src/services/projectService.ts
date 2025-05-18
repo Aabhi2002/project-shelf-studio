@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Project, TimelineItem, MediaItem, ToolItem } from '@/types/project';
 import { v4 as uuidv4 } from 'uuid';
@@ -376,4 +375,56 @@ const getDeviceType = (): string => {
     return 'Tablet';
   }
   return 'Desktop';
+};
+
+export const getPublicProjectsByUserId = async (userId: string) => {
+  try {
+    // First, get the basic project data
+    const { data: projects, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('is_public', true)
+      .order('updated_at', { ascending: false });
+
+    if (error) {
+      console.error('Supabase error fetching public projects:', error);
+      throw error;
+    }
+
+    if (!projects || projects.length === 0) {
+      console.log('No public projects found for user:', userId);
+      return [];
+    }
+
+    // Map the database response to our Project type
+    const mappedProjects: Project[] = projects.map(project => ({
+      id: project.id,
+      title: project.title,
+      description: project.description,
+      coverImage: project.cover_image,
+      category: project.category,
+      overview: project.overview,
+      challenge: project.challenge,
+      process: project.process,
+      outcome: project.outcome,
+      status: project.status as 'draft' | 'published' | 'archived',
+      theme: project.theme as 'minimalist' | 'bold' | 'elegant',
+      isPublic: project.is_public,
+      slug: project.slug,
+      createdAt: project.created_at,
+      updatedAt: project.updated_at,
+      userId: project.user_id,
+      // Initialize empty arrays for related data
+      timeline: [],
+      media: [],
+      tools: []
+    }));
+
+    console.log('Fetched and mapped public projects:', mappedProjects);
+    return mappedProjects;
+  } catch (error) {
+    console.error('Error fetching public projects by user ID:', error);
+    throw error;
+  }
 };
